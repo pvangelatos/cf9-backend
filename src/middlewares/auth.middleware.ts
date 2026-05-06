@@ -13,8 +13,9 @@ declare global {
 const JWT_SECRET = process.env.JWT_SECRET || 'changeme';
 
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
+  console.log("XXXXXXX");
   const header = req.headers.authorization;
-  // console.log(">>>>",req);
+  console.log(">>>>",req);
   if (!header || !header.startsWith('Bearer ')) {
     return res.status(401).json({message: "Missing or invalid Authorization header"});
   }
