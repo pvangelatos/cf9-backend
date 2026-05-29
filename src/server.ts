@@ -1,5 +1,15 @@
 import app from './app';
+import { connectDB } from './utils/db';
 
-app.listen(3000, () => {
-    console.log('Server is up');
-})
+
+const start = async() => {
+  
+  await connectDB();
+  
+  const port = process.env.PORT || 3000;
+  app.listen(port, ()=>{
+    console.log(`Server is up on port ${port}`);
+  })
+}
+
+start();
