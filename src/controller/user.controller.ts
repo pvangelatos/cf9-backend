@@ -1,52 +1,48 @@
-import { Schema, model, Document, Types } from "mongoose";
+import { Request, Response, NextFunction } from 'express';
+import * as userService from '../services/user.service';
 
-interface IPhone {type:string, number:string}
-
-export interface IUser extends Document {
-  username: string;
-  password: string;
-  firstname?: string;
-  lastname?: string;
-  email?: string;
-  address?: {
-    area?: string;
-    street?: string;
-    number?:string;
-    po?:string;
-    municipality?:string
+export const getAll = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const users = await userService.findUsers();
+    res.status(200).json(users);
+  } catch (err) {
+    next(err);
   }
-  phone?:IPhone[];
-  roles:Types.ObjectId[];
-}
+};
 
-const PhoneSchema = new Schema<IPhone>({
-  type: String, 
-  number: String
-})
+export const getOneByEmail = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const email = req.params.email as string;
+    const user = await userService.findUserByEmail(email);
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+    res.status(200).json(user);
+  } catch (err) {
+    next(err);
+  }
+};
 
-const UserSchema = new Schema<IUser>({
-  username: { type:String, required: true, unique:true },
-  password: { type:String, required: true},
-  firstname: String,
-  lastname: String,
-  // email: { type: String, index:true} απλά δημιουργεί index
-  email: { type: String, unique: true },
-  address: {
-    area: String,
-    street: String,
-    number: String,
-    po: String,
-    municipality: String
-  },
-  phone: [PhoneSchema],
-  roles: [{
-    type: Schema.Types.ObjectId,
-    ref: "Role",
-    required: true
-  }]
-},{
-  collection: 'users',
-  timestamps: true
-});
+export const create = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = await userService.createUser(req.body);
+    res.status(201).json({ status: true, data: user });
+  } catch (err) {
+    next(err);
+  }
+};
 
-export default model<IUser>("User", UserSchema);
+export const update = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const username = req.params.username as string;
+    const user = await userService.updateUser(username, req.body);
+    if (!user) {
+      res.status(404).json({ status: false, message: 'User not found' });
+      return;
+    }
+    res.status(200).json({ status: true, data: user });
+  } catch (err) {
+    next(err);
+  }
+};
